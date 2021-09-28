@@ -4,13 +4,20 @@ import {createError} from '../helpers/error'
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
   return new Promise((resolve, reject) => {
-    const { url, method = 'get', data = null, headers, responseType, timeout } = config
+    const { url, method = 'get', data = null, headers={}, responseType, timeout, cancelToken } = config
     const xmlHttpReq = new XMLHttpRequest()
     if(responseType) {
         xmlHttpReq.responseType = responseType
     }
     if(timeout) {
       xmlHttpReq.timeout = timeout
+    }
+    // debugger
+    if(cancelToken) {
+      cancelToken.promise.then(reason => {
+        xmlHttpReq.abort()
+        reject(reason)
+      })
     }
     xmlHttpReq.ontimeout = function() {
       reject(createError('timeout', config, 'ECONNABORTED', xmlHttpReq))

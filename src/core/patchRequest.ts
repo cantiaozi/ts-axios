@@ -5,6 +5,7 @@ import { flattenHeaders, processHeader } from '../helpers/headers'
 import xhr from './xhr'
 import transform from './transform'
 function patchRequest(config: AxiosRequestConfig):AxiosPromise {
+    throwIfCancellationRequested(config)
     processConfig(config)
     return xhr(config).then(res => {
         return transformResponseData(res)
@@ -33,5 +34,10 @@ function transformResponseData(res: AxiosResponse): AxiosResponse {
     // res.data = transformResponse(res.data)
     res.data = transform(res.data, res.headers, res.config.transformResponse)
     return res
+}
+function throwIfCancellationRequested(config: AxiosRequestConfig) {
+    if(config.cancelToken) {
+        config.cancelToken.throwIfRequested()
+    }
 }
 export default patchRequest
